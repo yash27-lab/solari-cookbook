@@ -1,0 +1,31 @@
+name: Bug report
+description: Share a clear problem in Civra
+title: "Bug: "
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Tell us what you saw and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to see it
+      description: List the smallest set of steps that shows the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: proof
+    attributes:
+      label: Helpful proof
+      description: Add a screen image or error text. Never add keys or private files.
+  - type: checkboxes
+    id: private
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed keys, passwords, and private owner facts.
+          required: true

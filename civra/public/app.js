@@ -11,6 +11,11 @@ const tourIcon = document.querySelector("#tourIcon")
 const tourBar = document.querySelector("#tourBar")
 const tourBack = document.querySelector("#tourBack")
 const tourNext = document.querySelector("#tourNext")
+const liveCheck = document.querySelector("#liveCheck")
+const liveStatus = document.querySelector("#liveStatus")
+
+const allowedFileTypes = new Set(["application/pdf", "image/jpeg", "image/png"])
+const maxFileBytes = 10 * 1024 * 1024
 
 const tourSteps = [
   {
@@ -54,7 +59,7 @@ function showTourStep() {
   tourDemo.innerHTML = step.demo
   tourCount.textContent = `Step ${tourStep + 1} of ${tourSteps.length}`
   tourIcon.textContent = String(tourStep + 1)
-  tourBar.style.width = `${((tourStep + 1) / tourSteps.length) * 100}%`
+  tourBar.className = `tourbar${tourStep + 1}`
   tourBack.disabled = tourStep === 0
   tourNext.textContent = tourStep === tourSteps.length - 1 ? "Open my permit task" : "Next step"
 }
@@ -101,6 +106,21 @@ tourNext.addEventListener("click", () => {
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0]
   if (!file) return
+
+  if (!allowedFileTypes.has(file.type)) {
+    fileOk.textContent = "This file type is not allowed. Use JPG, PNG, or PDF."
+    continueButton.disabled = true
+    fileInput.value = ""
+    return
+  }
+
+  if (file.size > maxFileBytes) {
+    fileOk.textContent = "This file is too large. Use a file under 10 MB."
+    continueButton.disabled = true
+    fileInput.value = ""
+    return
+  }
+
   fileOk.textContent = `${file.name} is ready to check.`
   continueButton.disabled = false
 })
@@ -108,4 +128,22 @@ fileInput.addEventListener("change", () => {
 continueButton.addEventListener("click", () => {
   continueButton.textContent = "File checked. Form is ready for your review."
   continueButton.disabled = true
+})
+
+liveCheck.addEventListener("click", async () => {
+  liveCheck.disabled = true
+  liveStatus.textContent = "Solari is checking the official city page."
+
+  try {
+    const response = await fetch("/api/permit-check", { method: "POST" })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || "The city check failed.")
+
+    const found = Object.values(result.checks).filter(Boolean).length
+    liveStatus.textContent = `Live check done. ${found} of 4 permit needs were found on the city page.`
+  } catch (error) {
+    liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
+  } finally {
+    liveCheck.disabled = false
+  }
 })

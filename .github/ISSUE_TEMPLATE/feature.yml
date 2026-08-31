@@ -1,0 +1,29 @@
+name: Feature idea
+description: Share a useful and safe Civra idea
+title: "Idea: "
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What owner problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What is the simple idea?
+    validations:
+      required: true
+  - type: dropdown
+    id: risk
+    attributes:
+      label: Does it touch an outside action?
+      options:
+        - No
+        - Sign in
+        - File upload
+        - Payment
+        - Final submission
+    validations:
+      required: true

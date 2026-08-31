@@ -1,5 +1,19 @@
 # Solari Cookbook
 
+## Featured build: Civra
+
+[Civra](civra) is a permit helper for small business owners. It uses a real Solari browser session to check the official New York City food permit page, find listed needs, and return a clear result. The owner view keeps payment and final submission behind a human choice.
+
+```bash
+cd civra
+npm install
+npm start
+```
+
+Read the [Civra guide](civra/README.md), [system design](docs/CIVRA_ARCHITECTURE.md), and [safety plan](docs/CIVRA_THREAT_MODEL.md).
+
+---
+
 Short, runnable examples for [Solari](https://getsolari.com) — cloud browsers,
 sandboxes, and desktops behind one API key.
 

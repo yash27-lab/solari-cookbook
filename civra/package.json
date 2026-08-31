@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "check": "node --check server.js && node --check solari-service.js && node --check public/app.js && npm test",
     "start": "node server.js",
-    "test": "node tests.js"
+    "test": "node --test tests.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@solarisdk/browser": "^0.1.1"
   }
 }
