@@ -38,6 +38,18 @@ This first version shows the full owner view and review flow. The next version w
 
 5. Choose when to pay or send.
 
+The guide inside Civra walks through all six parts of the task. It starts with the permit list and ends with owner review.
+
+## Safety
+
+The current demo keeps selected files in the browser. It does not send them to a city site.
+
+The real file check will use a separate Solari work space.
+
+The Solari key must stay on the server. It must never be placed in the page.
+
+Civra always waits for the owner before payment or final send.
+
 ## Run Civra
 
 ```text

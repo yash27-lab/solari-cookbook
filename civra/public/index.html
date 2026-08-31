@@ -61,6 +61,16 @@
       </article>
     </section>
 
+    <section class="security" id="securityCard">
+      <div>
+        <p class="eyebrow">SAFETY FIRST</p>
+        <h3>Your files and choices stay under your control.</h3>
+      </div>
+      <div class="securityitem"><span>01</span><p><strong>Local demo</strong><small>In this demo, your file stays in your browser. It is not sent to a city site.</small></p></div>
+      <div class="securityitem"><span>02</span><p><strong>Private work space</strong><small>Real file checks will run in a separate Solari work space.</small></p></div>
+      <div class="securityitem"><span>03</span><p><strong>You approve</strong><small>Civra cannot pay or send a final form without your choice.</small></p></div>
+    </section>
+
     <section class="grid">
       <article class="card permits">
         <div class="cardtop"><div><p class="eyebrow">YOUR PERMITS</p><h3>Three are safe. One needs care.</h3></div><button>View all</button></div>
@@ -117,12 +127,18 @@
     <div class="guidebox">
       <button class="close" id="closeGuide">Close</button>
       <p class="eyebrow">HOW TO USE CIVRA</p>
-      <h2>Four simple steps.</h2>
-      <div class="guidestep"><span>1</span><div><strong>Add your permit</strong><p>Enter the permit name and due date. You can also add a photo or PDF.</p></div></div>
-      <div class="guidestep"><span>2</span><div><strong>Let Civra check</strong><p>Civra finds the city page and checks which files and facts are needed.</p></div></div>
-      <div class="guidestep"><span>3</span><div><strong>Review each answer</strong><p>Open the task and check every answer. Civra shows where each answer came from.</p></div></div>
-      <div class="guidestep"><span>4</span><div><strong>Choose when to send</strong><p>Civra waits for you before any payment or final send.</p></div></div>
-      <button class="continue" id="startGuide">Show my first task</button>
+      <div class="tourprogress"><span id="tourBar"></span></div>
+      <p class="tourcount" id="tourCount">Step 1 of 6</p>
+      <div class="tourbody" aria-live="polite">
+        <div class="touricon" id="tourIcon">1</div>
+        <h2 id="tourTitle">See what needs care.</h2>
+        <p id="tourText">Your home page shows every permit and the next date that needs your care.</p>
+        <div class="tourdemo" id="tourDemo"></div>
+      </div>
+      <div class="touractions">
+        <button class="tourback" id="tourBack" disabled>Back</button>
+        <button class="continue" id="tourNext">Next step</button>
+      </div>
     </div>
   </div>
   <script src="app.js"></script>
