@@ -8,21 +8,23 @@ Civra helps a small business owner understand and prepare a permit task without 
 
 1. The browser loads the Civra owner view.
 
-2. The owner can run the live city check.
+2. The owner enters a private Civra access code. The server creates a one hour session in a private browser cookie.
 
-3. The Civra server checks that a Solari key exists.
+3. The owner can run the live city check only while that session is open.
 
-4. The server starts a recorded Solari browser session.
+4. The Civra server checks that a Solari key exists.
 
-5. Solari opens the fixed official New York City food permit page.
+5. The server starts a recorded Solari browser session.
 
-6. Civra first checks that the page is still the real permit page: the final address, the page title, and known page sections must all match.
+6. Solari opens the fixed official New York City food permit page.
 
-7. If the page passes, Civra returns found or missing for each of the four permit needs, with the city text that supports each answer. If the page fails any check, every need is returned as unknown and a person must review.
+7. Civra first checks that the page is still the real permit page: the final address, the page title, and known page sections must all match.
 
-8. The browser shows the result. The Solari key never reaches the browser.
+8. If the page passes, Civra returns found or missing for each need. Found includes matching city text. Missing has no evidence and requires review. If the page fails a trust check, every need is unknown.
 
-9. One shared result is cached for fifteen minutes, requests that arrive together join one browser run, and a failed run pauses new runs for one minute. This bounds Solari spend.
+9. The browser shows the result. The Solari key never reaches the browser.
+
+10. Each running server caches one result for fifteen minutes, joins requests that arrive together, and pauses for one minute after a failed run. A multi server release still needs a shared rate and spend limit.
 
 ## Trust rules
 

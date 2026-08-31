@@ -13,6 +13,9 @@ const tourBack = document.querySelector("#tourBack")
 const tourNext = document.querySelector("#tourNext")
 const liveCheck = document.querySelector("#liveCheck")
 const liveStatus = document.querySelector("#liveStatus")
+const accessForm = document.querySelector("#accessForm")
+const accessCode = document.querySelector("#accessCode")
+const signOut = document.querySelector("#signOut")
 const permitForm = document.querySelector("#permitForm")
 const addPermitForm = document.querySelector("#addPermitForm")
 const toast = document.querySelector("#toast")
@@ -213,7 +216,10 @@ liveCheck.addEventListener("click", async () => {
   liveStatus.textContent = "Solari is checking the official city page."
 
   try {
-    const response = await fetch("/api/permit-check", { method: "POST" })
+    const response = await fetch("/api/permit-check", {
+      method: "POST",
+      headers: { "X-Civra-Action": "permit-check" }
+    })
     const result = await response.json()
     if (!response.ok) throw new Error(result.message || "The city check failed.")
 
@@ -235,3 +241,51 @@ liveCheck.addEventListener("click", async () => {
     liveCheck.disabled = false
   }
 })
+
+function showSession(isOpen) {
+  liveCheck.disabled = !isOpen
+  accessForm.hidden = isOpen
+  signOut.hidden = !isOpen
+  liveStatus.textContent = isOpen
+    ? "Live check is unlocked for this browser."
+    : "Unlock before using the paid Solari check."
+}
+
+async function syncSession() {
+  try {
+    const response = await fetch("/api/session")
+    const result = await response.json()
+    showSession(Boolean(result.authenticated))
+  } catch {
+    showSession(false)
+    liveStatus.textContent = "The server could not check your Civra session."
+  }
+}
+
+accessForm.addEventListener("submit", async event => {
+  event.preventDefault()
+  const code = accessCode.value
+  accessCode.value = ""
+  liveStatus.textContent = "Checking the Civra access code."
+
+  try {
+    const response = await fetch("/api/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessCode: code })
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || "The access code was not accepted.")
+    showSession(true)
+  } catch (error) {
+    showSession(false)
+    liveStatus.textContent = error instanceof Error ? error.message : "The access code was not accepted."
+  }
+})
+
+signOut.addEventListener("click", async () => {
+  await fetch("/api/session", { method: "DELETE" }).catch(() => undefined)
+  showSession(false)
+})
+
+syncSession()

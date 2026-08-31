@@ -43,6 +43,12 @@ h3 { font-size:22px; margin-bottom:0; }
 .livecheck { margin-top:16px; padding:10px 12px; border:0; border-radius:7px; background:var(--green); color:white; font-weight:bold; cursor:pointer; }
 .livecheck:disabled { opacity:.55; cursor:wait; }
 .livestatus { display:block; margin-top:9px; color:#69736e; line-height:1.4; }
+.accessform { margin-top:16px; }
+.accessform label { display:block; margin-bottom:6px; color:#59645e; font-size:11px; font-weight:bold; }
+.accessform div { display:flex; gap:7px; }
+.accessform input { min-width:0; flex:1; padding:9px; border:1px solid var(--line); border-radius:7px; font:inherit; }
+.accessform button,.signout { padding:9px 11px; border:1px solid var(--line); border-radius:7px; background:white; color:var(--green); font-weight:bold; cursor:pointer; }
+.signout { margin:16px 0 0 7px; }
 .security { margin-top:22px; padding:25px; display:grid; grid-template-columns:1.2fr repeat(3,1fr); gap:24px; align-items:start; background:var(--ink); color:white; border-radius:13px; }
 .security h3 { font-size:19px; margin:0; }
 .security .eyebrow { color:#aebbb5; }

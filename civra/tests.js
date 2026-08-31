@@ -94,6 +94,26 @@ async function withApiKey(run) {
   }
 }
 
+async function openTestSession(base, accessCode = "test_access") {
+  const response = await fetch(`${base}/api/session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accessCode })
+  })
+  const cookie = response.headers.get("set-cookie")
+  return { response, cookie: cookie ? cookie.split(";")[0] : null }
+}
+
+async function paidCheck(base, cookie) {
+  return fetch(`${base}/api/permit-check`, {
+    method: "POST",
+    headers: {
+      Cookie: cookie,
+      "X-Civra-Action": "permit-check"
+    }
+  })
+}
+
 test("the server returns the app with strong browser headers", () => withServer(async base => {
   const response = await fetch(`${base}/`)
   assert.equal(response.status, 200)
@@ -116,10 +136,11 @@ test("the live check fails safely when the server key is missing", async () => {
   delete process.env.SOLARI_API_KEY
   try {
     await withServer(async base => {
-      const response = await fetch(`${base}/api/permit-check`, { method: "POST" })
+      const { cookie } = await openTestSession(base)
+      const response = await paidCheck(base, cookie)
       assert.equal(response.status, 503)
       assert.equal((await response.json()).code, "SOLARI_KEY_MISSING")
-    })
+    }, { accessCode: "test_access" })
   } finally {
     if (savedKey) process.env.SOLARI_API_KEY = savedKey
   }
@@ -130,6 +151,55 @@ test("unknown files and unsafe methods are rejected", () => withServer(async bas
   assert.equal((await fetch(`${base}/`, { method: "POST" })).status, 405)
 }))
 
+test("the paid check requires a private Civra session", () => withApiKey(() => {
+  const runCheck = async () => ({ pageVerified: true, reasons: [], checks: {} })
+  return withServer(async base => {
+    const response = await fetch(`${base}/api/permit-check`, {
+      method: "POST",
+      headers: { "X-Civra-Action": "permit-check" }
+    })
+    assert.equal(response.status, 401)
+    assert.equal((await response.json()).code, "AUTH_REQUIRED")
+  }, { runCheck, accessCode: "test_access" })
+}))
+
+test("a valid access code creates a private browser cookie", () => withServer(async base => {
+  const denied = await openTestSession(base, "wrong_code")
+  assert.equal(denied.response.status, 401)
+
+  const allowed = await openTestSession(base)
+  assert.equal(allowed.response.status, 200)
+  const fullCookie = allowed.response.headers.get("set-cookie")
+  assert.match(fullCookie, /HttpOnly/)
+  assert.match(fullCookie, /SameSite=Strict/)
+  assert.ok(allowed.cookie)
+}, { accessCode: "test_access" }))
+
+test("repeated wrong access codes start a login cooldown", () => withServer(async base => {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const denied = await openTestSession(base, "wrong_code")
+    assert.equal(denied.response.status, 401)
+  }
+
+  const blocked = await openTestSession(base, "wrong_code")
+  assert.equal(blocked.response.status, 429)
+  assert.equal((await blocked.response.json()).code, "LOGIN_COOLDOWN")
+  assert.ok(Number(blocked.response.headers.get("retry-after")) >= 1)
+}, { accessCode: "test_access" }))
+
+test("an open session still needs the trusted action header", () => withApiKey(() => {
+  const runCheck = async () => ({ pageVerified: true, reasons: [], checks: {} })
+  return withServer(async base => {
+    const { cookie } = await openTestSession(base)
+    const response = await fetch(`${base}/api/permit-check`, {
+      method: "POST",
+      headers: { Cookie: cookie }
+    })
+    assert.equal(response.status, 403)
+    assert.equal((await response.json()).code, "ACTION_HEADER_REQUIRED")
+  }, { runCheck, accessCode: "test_access" })
+}))
+
 test("a second request is served from cache without a new paid check", () => withApiKey(() => {
   let calls = 0
   const runCheck = async () => {
@@ -138,16 +208,17 @@ test("a second request is served from cache without a new paid check", () => wit
   }
 
   return withServer(async base => {
-    const first = await fetch(`${base}/api/permit-check`, { method: "POST" })
+    const { cookie } = await openTestSession(base)
+    const first = await paidCheck(base, cookie)
     assert.equal(first.status, 200)
     assert.equal((await first.json()).fromCache, false)
 
-    const second = await fetch(`${base}/api/permit-check`, { method: "POST" })
+    const second = await paidCheck(base, cookie)
     assert.equal(second.status, 200)
     assert.equal((await second.json()).fromCache, true)
 
     assert.equal(calls, 1)
-  }, { runCheck })
+  }, { runCheck, accessCode: "test_access" })
 }))
 
 test("concurrent requests share one live check instead of two launches", () => withApiKey(() => {
@@ -159,14 +230,15 @@ test("concurrent requests share one live check instead of two launches", () => w
   }
 
   return withServer(async base => {
+    const { cookie } = await openTestSession(base)
     const [first, second] = await Promise.all([
-      fetch(`${base}/api/permit-check`, { method: "POST" }),
-      fetch(`${base}/api/permit-check`, { method: "POST" })
+      paidCheck(base, cookie),
+      paidCheck(base, cookie)
     ])
     assert.equal(first.status, 200)
     assert.equal(second.status, 200)
     assert.equal(calls, 1)
-  }, { runCheck })
+  }, { runCheck, accessCode: "test_access" })
 }))
 
 test("a failed check answers 502 and then cools down with 429", () => withApiKey(() => {
@@ -177,17 +249,18 @@ test("a failed check answers 502 and then cools down with 429", () => withApiKey
   }
 
   return withServer(async base => {
-    const failed = await fetch(`${base}/api/permit-check`, { method: "POST" })
+    const { cookie } = await openTestSession(base)
+    const failed = await paidCheck(base, cookie)
     assert.equal(failed.status, 502)
     assert.equal((await failed.json()).code, "PERMIT_CHECK_FAILED")
 
-    const throttled = await fetch(`${base}/api/permit-check`, { method: "POST" })
+    const throttled = await paidCheck(base, cookie)
     assert.equal(throttled.status, 429)
     assert.equal((await throttled.json()).code, "CHECK_COOLDOWN")
     assert.ok(Number(throttled.headers.get("retry-after")) >= 1)
 
     assert.equal(calls, 1)
-  }, { runCheck, cooldownMs: 60000 })
+  }, { runCheck, cooldownMs: 60000, accessCode: "test_access" })
 }))
 
 test("after the cooldown passes, the check is allowed to run again", () => withApiKey(() => {
@@ -199,9 +272,10 @@ test("after the cooldown passes, the check is allowed to run again", () => withA
   }
 
   return withServer(async base => {
-    assert.equal((await fetch(`${base}/api/permit-check`, { method: "POST" })).status, 502)
-    const retried = await fetch(`${base}/api/permit-check`, { method: "POST" })
+    const { cookie } = await openTestSession(base)
+    assert.equal((await paidCheck(base, cookie)).status, 502)
+    const retried = await paidCheck(base, cookie)
     assert.equal(retried.status, 200)
     assert.equal(calls, 2)
-  }, { runCheck, cooldownMs: 0 })
+  }, { runCheck, cooldownMs: 0, accessCode: "test_access" })
 }))

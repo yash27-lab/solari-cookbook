@@ -4,7 +4,7 @@
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Civra</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <aside class="side">
@@ -58,8 +58,13 @@
         <p class="eyebrow">MADE WITH SOLARI</p>
         <h3>Safe tools do the busy work.</h3>
         <p>Solari opens city pages, keeps sign in safe, checks files in a private work space, and saves a clear record of each visit.</p>
-        <button class="livecheck" id="liveCheck">Run live city check</button>
-        <small class="livestatus" id="liveStatus" aria-live="polite">Needs a Solari key on the server.</small>
+        <form class="accessform" id="accessForm">
+          <label for="accessCode">Civra access code</label>
+          <div><input id="accessCode" type="password" autocomplete="current-password" required><button type="submit">Unlock</button></div>
+        </form>
+        <button class="livecheck" id="liveCheck" disabled>Run live city check</button>
+        <button class="signout" id="signOut" type="button" hidden>Lock live check</button>
+        <small class="livestatus" id="liveStatus" aria-live="polite">Unlock before using the paid Solari check.</small>
       </article>
     </section>
 
@@ -157,6 +162,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

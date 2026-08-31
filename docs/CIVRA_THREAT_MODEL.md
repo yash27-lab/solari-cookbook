@@ -22,6 +22,12 @@ Risk: A key placed in browser code can be copied.
 
 Control: The key is read only from the server process. The page calls a small Civra route and never sees the key.
 
+### Paid route abuse
+
+Risk: A public user could call the paid Solari route and spend the project balance.
+
+Control: The paid route requires a private Civra session and a trusted action header. Wrong access codes are slowed. Each server also caches success, joins calls made at the same time, and pauses after failure. A multi server release still needs a shared rate limit and daily spend stop.
+
 ### Unsafe web target
 
 Risk: A user given URL could make the server visit a private or harmful address.

@@ -42,11 +42,15 @@ The guide inside Civra walks through all six parts of the task. It starts with t
 
 ## Safety
 
-The live check fails closed. Before trusting the page, Civra confirms the final address, the page title, and known page sections. If anything looks changed, every permit need is returned as unknown and Civra asks for a human look. Found and missing answers include the city text that supports them.
+The live check fails closed when the final address, page title, known page sections, or most known phrases do not match. In that case, every permit need is unknown and Civra asks for a human look.
 
-The live check endpoint is metered. One shared result is cached for fifteen minutes, requests that arrive together share one browser run, and a failed run pauses new runs for one minute. This keeps one endpoint from spending the Solari balance.
+A found answer includes the matching city text. A missing answer means the known phrase was not found and has no evidence. Missing never means the owner is ready. The page tells the owner to review it.
 
-Civra does not store portal passwords or sign in to private city accounts. Any future sign in will be done by the owner in a private session that Civra cannot read or save.
+The paid live check requires a private Civra access code. A correct code creates a one hour browser session in a private cookie. The page cannot read that cookie. Repeated wrong codes are slowed.
+
+The live check is also metered inside each running server. One result is cached for fifteen minutes, requests that arrive together share one browser run, and a failed run pauses new runs for one minute. A real multi server release still needs a shared rate limit and daily spend limit.
+
+Civra does not store portal passwords or sign in to private city accounts today. In a future private portal flow, the owner will type the password themselves. Civra will be designed not to collect or store that password.
 
 The current demo keeps selected files in the browser. It does not send them to a city site.
 
@@ -75,9 +79,9 @@ npm run check
 
 ## Run the live Solari check
 
-Copy `.env.example` to `.env` and add your Solari key. Load it into your server shell before starting Civra.
+Copy `.env.example` to `.env`, add your Solari key, and choose a long private Civra access code. Load both values into your server shell before starting Civra.
 
-The key is read only by the server. It is never sent to the page.
+The Solari key and Civra access code are read only by the server. They are never placed in the page code.
 
 ## Solari source
 
