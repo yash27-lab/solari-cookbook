@@ -42,6 +42,12 @@ The guide inside Civra walks through all six parts of the task. It starts with t
 
 ## Safety
 
+The live check fails closed. Before trusting the page, Civra confirms the final address, the page title, and known page sections. If anything looks changed, every permit need is returned as unknown and Civra asks for a human look. Found and missing answers include the city text that supports them.
+
+The live check endpoint is metered. One shared result is cached for fifteen minutes, requests that arrive together share one browser run, and a failed run pauses new runs for one minute. This keeps one endpoint from spending the Solari balance.
+
+Civra does not store portal passwords or sign in to private city accounts. Any future sign in will be done by the owner in a private session that Civra cannot read or save.
+
 The current demo keeps selected files in the browser. It does not send them to a city site.
 
 The real file check will use a separate Solari work space.

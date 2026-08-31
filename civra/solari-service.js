@@ -7,11 +7,58 @@ const checks = [
   { key: "email", phrase: "valid email address" }
 ]
 
-function extractChecks(text) {
-  const body = text.toLowerCase()
-  return Object.fromEntries(
-    checks.map(({ key, phrase }) => [key, body.includes(phrase.toLowerCase())])
+// Markers that identify the permit page itself, separate from the permit
+// needs above. If any marker is gone the page has changed shape and no
+// check result can be trusted.
+const pageMarkers = ["food service establishment", "permit"]
+
+// The page currently lists all four needs. If fewer than this many phrases
+// survive, the city rewrote the page rather than dropped requirements.
+const minPhrasesForTrust = 2
+
+function excerpt(text, lowerBody, lowerPhrase) {
+  const at = lowerBody.indexOf(lowerPhrase)
+  if (at === -1) return null
+  const start = Math.max(0, at - 60)
+  const end = Math.min(text.length, at + lowerPhrase.length + 60)
+  return text.slice(start, end).replace(/\s+/g, " ").trim()
+}
+
+// Fail closed: any doubt about the page means every check is "unknown",
+// never a silent "missing".
+function evaluatePermitPage({ finalUrl, title, text }) {
+  const reasons = []
+  const lowerBody = (text || "").toLowerCase()
+
+  const finalBase = String(finalUrl || "").split(/[?#]/)[0].replace(/\/+$/, "")
+  if (finalBase !== PERMIT_URL) {
+    reasons.push("The browser ended on a different address than the official permit page.")
+  }
+
+  if (!/food service/i.test(title || "")) {
+    reasons.push("The page title does not look like the food service permit page.")
+  }
+
+  const missingMarkers = pageMarkers.filter(marker => !lowerBody.includes(marker))
+  if (missingMarkers.length > 0) {
+    reasons.push(`Expected page sections are missing: ${missingMarkers.join(", ")}.`)
+  }
+
+  const phrasesFound = checks.filter(({ phrase }) => lowerBody.includes(phrase.toLowerCase())).length
+  if (phrasesFound < minPhrasesForTrust) {
+    reasons.push(`Only ${phrasesFound} of ${checks.length} known permit needs appear, so the page has likely changed.`)
+  }
+
+  const pageVerified = reasons.length === 0
+  const results = Object.fromEntries(
+    checks.map(({ key, phrase }) => {
+      if (!pageVerified) return [key, { status: "unknown", evidence: null }]
+      const evidence = excerpt(text, lowerBody, phrase.toLowerCase())
+      return [key, evidence ? { status: "found", evidence } : { status: "missing", evidence: null }]
+    })
   )
+
+  return { pageVerified, reasons, checks: results }
 }
 
 async function runPermitCheck({ apiKey }) {
@@ -25,14 +72,16 @@ async function runPermitCheck({ apiKey }) {
     browser = await solari.launch({ recording: true })
     const page = await browser.newPage()
     await page.goto(PERMIT_URL, { waitUntil: "domcontentloaded", timeout: 30000 })
+    const finalUrl = page.url()
     const title = await page.title()
-    const body = await page.locator("body").innerText()
+    const text = await page.locator("body").innerText()
 
     return {
       checkedAt: new Date().toISOString(),
-      checks: extractChecks(body),
       source: PERMIT_URL,
-      title
+      finalUrl,
+      title,
+      ...evaluatePermitPage({ finalUrl, title, text })
     }
   } finally {
     if (browser) await browser.close()
@@ -40,4 +89,4 @@ async function runPermitCheck({ apiKey }) {
   }
 }
 
-module.exports = { PERMIT_URL, extractChecks, runPermitCheck }
+module.exports = { PERMIT_URL, evaluatePermitPage, runPermitCheck }

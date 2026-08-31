@@ -6,6 +6,12 @@ const { runPermitCheck } = require("./solari-service")
 const root = path.resolve(__dirname, "public")
 const defaultPort = Number(process.env.PORT || 4173)
 
+// Every live check launches a paid Solari browser, so the endpoint is
+// metered: one shared result is cached, concurrent requests join the same
+// run, and failures pause new spending for a cooldown window.
+const defaultCacheMs = 15 * 60 * 1000
+const defaultCooldownMs = 60 * 1000
+
 const types = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -27,50 +33,83 @@ function send(response, status, body, headers = {}) {
   response.end(body)
 }
 
-function sendJson(response, status, value) {
+function sendJson(response, status, value, headers = {}) {
   send(response, status, JSON.stringify(value), {
     "Cache-Control": "no-store",
-    "Content-Type": "application/json; charset=utf-8"
+    "Content-Type": "application/json; charset=utf-8",
+    ...headers
   })
 }
 
-async function handleApi(request, response, pathname) {
-  if (pathname === "/api/health" && request.method === "GET") {
-    sendJson(response, 200, { name: "civra", status: "ready" })
-    return true
-  }
+function createServer({ runCheck = runPermitCheck, cacheMs = defaultCacheMs, cooldownMs = defaultCooldownMs } = {}) {
+  let cached = null
+  let inFlight = null
+  let cooldownUntil = 0
 
-  if (pathname === "/api/permit-check" && request.method === "POST") {
+  async function handlePermitCheck(response) {
     if (!process.env.SOLARI_API_KEY) {
       sendJson(response, 503, {
         code: "SOLARI_KEY_MISSING",
         message: "Add SOLARI_API_KEY on the server to run the live permit check."
       })
-      return true
+      return
+    }
+
+    const now = Date.now()
+
+    if (cached && now < cached.expiresAt) {
+      sendJson(response, 200, { ...cached.value, fromCache: true })
+      return
+    }
+
+    if (now < cooldownUntil) {
+      const retryAfter = Math.ceil((cooldownUntil - now) / 1000)
+      sendJson(response, 429, {
+        code: "CHECK_COOLDOWN",
+        message: `A recent check failed. Please try again in ${retryAfter} seconds.`
+      }, { "Retry-After": String(retryAfter) })
+      return
+    }
+
+    if (!inFlight) {
+      inFlight = runCheck({ apiKey: process.env.SOLARI_API_KEY }).finally(() => {
+        inFlight = null
+      })
     }
 
     try {
-      const result = await runPermitCheck({ apiKey: process.env.SOLARI_API_KEY })
-      sendJson(response, 200, result)
+      const result = await inFlight
+      cached = { value: result, expiresAt: Date.now() + cacheMs }
+      sendJson(response, 200, { ...result, fromCache: false })
     } catch (error) {
+      cooldownUntil = Date.now() + cooldownMs
       console.error("Permit check failed", error instanceof Error ? error.message : error)
       sendJson(response, 502, {
         code: "PERMIT_CHECK_FAILED",
         message: "The permit page could not be checked. Please try again."
       })
     }
-    return true
   }
 
-  if (pathname.startsWith("/api/")) {
-    sendJson(response, 404, { code: "NOT_FOUND", message: "API route not found." })
-    return true
+  async function handleApi(request, response, pathname) {
+    if (pathname === "/api/health" && request.method === "GET") {
+      sendJson(response, 200, { name: "civra", status: "ready" })
+      return true
+    }
+
+    if (pathname === "/api/permit-check" && request.method === "POST") {
+      await handlePermitCheck(response)
+      return true
+    }
+
+    if (pathname.startsWith("/api/")) {
+      sendJson(response, 404, { code: "NOT_FOUND", message: "API route not found." })
+      return true
+    }
+
+    return false
   }
 
-  return false
-}
-
-function createServer() {
   return http.createServer(async (request, response) => {
     let pathname
     try {

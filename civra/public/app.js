@@ -217,8 +217,18 @@ liveCheck.addEventListener("click", async () => {
     const result = await response.json()
     if (!response.ok) throw new Error(result.message || "The city check failed.")
 
-    const found = Object.values(result.checks).filter(Boolean).length
-    liveStatus.textContent = `Live check done. ${found} of 4 permit needs were found on the city page.`
+    if (!result.pageVerified) {
+      liveStatus.textContent = "The city page does not look like the expected permit page. Every item is unknown until a person reviews it."
+      return
+    }
+
+    const statuses = Object.values(result.checks)
+    const found = statuses.filter(check => check.status === "found").length
+    const missing = statuses.filter(check => check.status === "missing").length
+    const note = result.fromCache ? " Shown from the last check." : ""
+    liveStatus.textContent = missing === 0
+      ? `Live check done. All ${found} permit needs were found on the city page.${note}`
+      : `Live check done. ${found} found and ${missing} not found on the city page. Please review.${note}`
   } catch (error) {
     liveStatus.textContent = error instanceof Error ? error.message : "The city check failed."
   } finally {

@@ -2,7 +2,7 @@
 
 ## Featured build: Civra
 
-[Civra](civra) is a permit helper for small business owners. It uses a real Solari browser session to check the official New York City food permit page, find listed needs, and return a clear result. The owner view keeps payment and final submission behind a human choice.
+[Civra](civra) is a permit helper for small business owners. It uses a real Solari browser session to check the official New York City food permit page and returns a found, missing, or unknown answer for each listed need. If the city page changes shape, Civra fails closed to unknown. The owner view keeps payment and final submission behind a human choice.
 
 ```bash
 cd civra

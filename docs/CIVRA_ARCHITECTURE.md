@@ -16,9 +16,13 @@ Civra helps a small business owner understand and prepare a permit task without 
 
 5. Solari opens the fixed official New York City food permit page.
 
-6. Civra looks for four permit needs and returns true or false for each one.
+6. Civra first checks that the page is still the real permit page: the final address, the page title, and known page sections must all match.
 
-7. The browser shows the count. The Solari key never reaches the browser.
+7. If the page passes, Civra returns found or missing for each of the four permit needs, with the city text that supports each answer. If the page fails any check, every need is returned as unknown and a person must review.
+
+8. The browser shows the result. The Solari key never reaches the browser.
+
+9. One shared result is cached for fifteen minutes, requests that arrive together join one browser run, and a failed run pauses new runs for one minute. This bounds Solari spend.
 
 ## Trust rules
 
