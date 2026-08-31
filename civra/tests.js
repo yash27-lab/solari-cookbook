@@ -19,6 +19,8 @@ test("the product copy explains the flow and safety rules", () => {
   assert.match(script, /No hidden send/)
   assert.match(script, /allowedFileTypes/)
   assert.match(script, /\/api\/permit-check/)
+  assert.match(script, /addPermitForm\.addEventListener/)
+  assert.match(script, /document\.querySelectorAll\("\.nav"\)/)
 })
 
 test("the city page text is turned into fixed permit checks", () => {
@@ -53,6 +55,7 @@ test("the server returns the app with strong browser headers", () => withServer(
   assert.match(response.headers.get("content-security-policy"), /default-src 'self'/)
   assert.equal(response.headers.get("x-content-type-options"), "nosniff")
   assert.equal(response.headers.get("x-frame-options"), "DENY")
+  assert.equal(response.headers.get("cache-control"), "no-store")
   assert.match(await response.text(), /Civra/)
 }))
 

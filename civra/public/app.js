@@ -13,6 +13,11 @@ const tourBack = document.querySelector("#tourBack")
 const tourNext = document.querySelector("#tourNext")
 const liveCheck = document.querySelector("#liveCheck")
 const liveStatus = document.querySelector("#liveStatus")
+const permitForm = document.querySelector("#permitForm")
+const addPermitForm = document.querySelector("#addPermitForm")
+const toast = document.querySelector("#toast")
+const permitsCard = document.querySelector("#permitsCard")
+const historyCard = document.querySelector("#historyCard")
 
 const allowedFileTypes = new Set(["application/pdf", "image/jpeg", "image/png"])
 const maxFileBytes = 10 * 1024 * 1024
@@ -51,6 +56,21 @@ const tourSteps = [
 ]
 
 let tourStep = 0
+let toastTimer
+
+function showToast(message) {
+  toast.textContent = message
+  toast.classList.add("show")
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600)
+}
+
+function showAndFocus(element) {
+  element.scrollIntoView({ behavior: "smooth", block: "center" })
+  element.focus({ preventScroll: true })
+  element.classList.remove("focusflash")
+  requestAnimationFrame(() => element.classList.add("focusflash"))
+}
 
 function showTourStep() {
   const step = tourSteps[tourStep]
@@ -77,6 +97,29 @@ function closeSheet() {
 document.querySelector("#openFlow").addEventListener("click", openSheet)
 document.querySelector("#closeFlow").addEventListener("click", closeSheet)
 document.querySelector("#closeButton").addEventListener("click", closeSheet)
+document.querySelector("#addPermit").addEventListener("click", () => {
+  permitForm.classList.add("show")
+  permitForm.setAttribute("aria-hidden", "false")
+  document.querySelector("#newPermitName").focus()
+})
+document.querySelector("#closePermitForm").addEventListener("click", () => {
+  permitForm.classList.remove("show")
+  permitForm.setAttribute("aria-hidden", "true")
+})
+document.querySelector("#viewPermits").addEventListener("click", () => showAndFocus(permitsCard))
+document.querySelector("#viewHistory").addEventListener("click", () => showAndFocus(historyCard))
+
+document.querySelectorAll(".nav").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".nav").forEach(item => item.classList.remove("active"))
+    button.classList.add("active")
+    const page = button.dataset.page
+    if (page === "home") window.scrollTo({ top: 0, behavior: "smooth" })
+    if (page === "permits") showAndFocus(permitsCard)
+    if (page === "files") openSheet()
+    if (page === "history") showAndFocus(historyCard)
+  })
+})
 document.querySelector("#helpButton").addEventListener("click", () => {
   tourStep = 0
   showTourStep()
@@ -128,6 +171,41 @@ fileInput.addEventListener("change", () => {
 continueButton.addEventListener("click", () => {
   continueButton.textContent = "File checked. Form is ready for your review."
   continueButton.disabled = true
+  showToast("The demo check is complete. Nothing was sent.")
+})
+
+addPermitForm.addEventListener("submit", event => {
+  event.preventDefault()
+  const name = document.querySelector("#newPermitName").value.trim()
+  const date = document.querySelector("#newPermitDate").value
+  if (!name || !date) return
+
+  const row = document.createElement("div")
+  row.className = "permitrow"
+
+  const icon = document.createElement("div")
+  icon.className = "icon pale"
+  icon.textContent = name.split(/\s+/).slice(0, 2).map(word => word[0]).join("").toUpperCase()
+
+  const details = document.createElement("div")
+  details.className = "grow"
+  const title = document.createElement("strong")
+  title.textContent = name
+  const due = document.createElement("span")
+  due.textContent = `Due ${new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}`
+  details.append(title, due)
+
+  const state = document.createElement("span")
+  state.className = "pill safe"
+  state.textContent = "Added"
+  row.append(icon, details, state)
+  document.querySelector(".permits").append(row)
+
+  permitForm.classList.remove("show")
+  permitForm.setAttribute("aria-hidden", "true")
+  addPermitForm.reset()
+  showAndFocus(permitsCard)
+  showToast(`${name} was added to this demo.`)
 })
 
 liveCheck.addEventListener("click", async () => {

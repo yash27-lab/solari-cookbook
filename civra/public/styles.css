@@ -2,6 +2,7 @@
 * { box-sizing:border-box; }
 body { margin:0; background:var(--cream); color:var(--ink); font-family:"Avenir Next", Avenir, "Segoe UI", sans-serif; }
 button { font:inherit; }
+button:focus-visible,input:focus-visible { outline:3px solid #92aea3; outline-offset:3px; }
 .side { position:fixed; inset:0 auto 0 0; width:240px; padding:30px 24px; background:var(--ink); color:white; display:flex; flex-direction:column; }
 .brand { color:white; text-decoration:none; font-size:32px; font-weight:700; letter-spacing:-1px; }
 .brand span { color:#a9beb6; }
@@ -120,4 +121,11 @@ input[type=file] { position:absolute; left:-9999px; }
 .touractions .continue { flex:1; }
 .tourback { padding:12px 20px; border:1px solid var(--line); border-radius:7px; background:white; color:var(--ink); font-weight:bold; cursor:pointer; }
 .tourback:disabled { opacity:.35; cursor:not-allowed; }
+.field { display:grid; gap:7px; margin-top:18px; color:#3e4944; font-size:12px; font-weight:bold; }
+.field input { width:100%; padding:12px 13px; border:1px solid var(--line); border-radius:7px; background:white; color:var(--ink); font:inherit; }
+.formnote { margin:18px 0 0; color:#69736e; font-size:12px; line-height:1.5; }
+.toast { position:fixed; right:24px; bottom:24px; z-index:10; max-width:340px; padding:13px 17px; border-radius:8px; background:var(--ink); color:white; font-size:12px; box-shadow:0 12px 30px #0003; opacity:0; transform:translateY(12px); pointer-events:none; transition:opacity .2s ease,transform .2s ease; }
+.toast.show { opacity:1; transform:translateY(0); }
+.focusflash { animation:focusflash 1.2s ease; }
+@keyframes focusflash { 0%,100% { box-shadow:none; } 40% { box-shadow:0 0 0 5px #b9ccc4; } }
 @media (max-width:850px) { .side { position:static; width:auto; height:auto; padding:18px 22px; flex-direction:row; align-items:center; } nav,.help,.person { display:none; } main { margin:0; padding:28px 20px; } .grid,.story,.security { grid-template-columns:1fr; } .notice { align-items:start; flex-wrap:wrap; } .noticecopy { min-width:220px; } }

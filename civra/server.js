@@ -102,10 +102,9 @@ function createServer() {
       }
 
       const extension = path.extname(file)
-      const cache = extension === ".html" ? "no-store" : "public, max-age=3600"
       response.writeHead(200, {
         ...safetyHeaders,
-        "Cache-Control": cache,
+        "Cache-Control": "no-store",
         "Content-Type": types[extension] || "application/octet-stream"
       })
       response.end(request.method === "HEAD" ? undefined : data)
