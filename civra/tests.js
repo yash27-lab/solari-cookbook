@@ -1,0 +1,17 @@
+const assert = require("assert")
+const fs = require("fs")
+const path = require("path")
+
+const html = fs.readFileSync(path.join(__dirname, "public", "index.html"), "utf8")
+const script = fs.readFileSync(path.join(__dirname, "public", "app.js"), "utf8")
+
+assert(html.includes("Civra"))
+assert(html.includes("Civra never sends or pays without you"))
+assert(html.includes("Civra will stop before payment or final send"))
+assert(html.includes("THE PROBLEM"))
+assert(html.includes("OUR ANSWER"))
+assert(html.includes("MADE WITH SOLARI"))
+assert(html.includes("Four simple steps"))
+assert(script.includes("fileInput.addEventListener"))
+assert(script.includes("helpButton"))
+console.log("Civra checks passed")

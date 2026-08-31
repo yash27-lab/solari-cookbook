@@ -1,0 +1,61 @@
+# Civra
+
+Civra helps small business owners keep permits ready.
+
+## The problem
+
+Small business owners often use many city sites for permits and renewals. The forms can be long. Files can be hard to find. Due dates can be missed. A missed permit can stop a business from working.
+
+## Our answer
+
+Civra puts the full permit task in one clear place. It finds the right city page, checks saved files, fills facts that are already known, and tells the owner what is missing.
+
+The owner stays in charge. Civra always waits before payment or final send.
+
+## How Civra uses Solari
+
+Civra is built from the Solari Cookbook.
+
+The browser profile example helps Civra keep a city sign in ready for the next visit.
+
+The browser record example helps Civra save a clear record of each page and step.
+
+The sandbox example gives Civra a private place to read files, check facts, and make ready to send forms.
+
+The desktop example can help with old PDF forms and city tools that need a full screen.
+
+This first version shows the full owner view and review flow. The next version will join these Solari tools to a real city permit task.
+
+## How to use Civra
+
+1. Add a permit name, due date, and file.
+
+2. Let Civra find the city page and list what is needed.
+
+3. Open the task and check every answer.
+
+4. Add any missing file.
+
+5. Choose when to pay or send.
+
+## Run Civra
+
+```text
+cd civra
+npm start
+```
+
+Open http://localhost:4173
+
+## Check Civra
+
+```text
+cd civra
+npm test
+```
+
+## Solari source
+
+The source examples are in the main examples folder of this repo.
+
+Solari docs are at https://docs.getsolari.com
