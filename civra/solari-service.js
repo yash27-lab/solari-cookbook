@@ -10,7 +10,11 @@ const checks = [
 // Markers that identify the permit page itself, separate from the permit
 // needs above. If any marker is gone the page has changed shape and no
 // check result can be trusted.
-const pageMarkers = ["food service establishment", "permit"]
+const pageMarkers = [
+  "food service establishment permit",
+  "review these steps before you submit your application",
+  "requirements checklist"
+]
 
 // The page currently lists all four needs. If fewer than this many phrases
 // survive, the city rewrote the page rather than dropped requirements.
@@ -72,6 +76,8 @@ async function runPermitCheck({ apiKey }) {
     browser = await solari.launch({ recording: true })
     const page = await browser.newPage()
     await page.goto(PERMIT_URL, { waitUntil: "domcontentloaded", timeout: 30000 })
+    await page.getByText("How To Apply", { exact: true }).first().click()
+    await page.waitForTimeout(750)
     const finalUrl = page.url()
     const title = await page.title()
     const text = await page.locator("body").innerText()

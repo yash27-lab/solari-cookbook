@@ -2,6 +2,20 @@
 
 Civra helps small business owners keep permits ready.
 
+## Live demo
+
+Open https://civra-1033856783599.us-east1.run.app/
+
+The public demo shows a saved result from a real recorded Solari browser run. The paid button is locked and cannot spend the Solari balance without a private Civra session.
+
+## Live proof
+
+The first real run returned unknown because the city hides its application needs behind a How To Apply tab. Civra refused to guess.
+
+We inspected the real Solari browser view, added the missing tab action, and ran it again. The second run verified the final city address, title, application section, and all four permit needs with supporting city text.
+
+The safe proof is stored in `public/live-proof.json`. Read the full proof story in `../docs/CIVRA_LIVE_PROOF.md`.
+
 ## The problem
 
 Small business owners often use many city sites for permits and renewals. The forms can be long. Files can be hard to find. Due dates can be missed. A missed permit can stop a business from working.
@@ -94,5 +108,7 @@ Solari docs are at https://docs.getsolari.com
 System design: `../docs/CIVRA_ARCHITECTURE.md`
 
 Safety plan: `../docs/CIVRA_THREAT_MODEL.md`
+
+Live proof: `../docs/CIVRA_LIVE_PROOF.md`
 
 How to help: `../CONTRIBUTING.md`

@@ -9,6 +9,8 @@ const goodPage = {
   title: "Food Service Establishment Permit - NYC Business",
   text: `
     Food Service Establishment Permit
+    Review these steps before you submit your application.
+    Requirements Checklist
     Bring a Certificate of Authority to Collect Sales Tax.
     A Food Protection Certificate is required for the manager.
     Show proof of workers' compensation and disability insurance.
@@ -64,7 +66,7 @@ test("an unexpected page title fails closed to unknown", () => {
 test("a rewritten page with most phrases gone fails closed to unknown", () => {
   const result = evaluatePermitPage({
     ...goodPage,
-    text: "Food Service Establishment Permit. This permit page is being updated. Give a valid email address."
+    text: "Food Service Establishment Permit. Review these steps before you submit your application. Requirements Checklist. Give a valid email address."
   })
 
   assert.equal(result.pageVerified, false)

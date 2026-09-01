@@ -140,3 +140,29 @@ test("access code unlocks the paid check and lock closes it", async () => {
 
   dom.window.close()
 })
+
+test("saved live proof is shown without spending a new browser run", async () => {
+  const fetchImpl = async url => {
+    if (url === "/api/session") return jsonResponse({ authenticated: false })
+    if (url === "/live-proof.json") {
+      return jsonResponse({
+        checkedAt: "2026-09-01T00:26:13.852Z",
+        source: "https://example.com/official",
+        pageVerified: true,
+        checks: {
+          one: { status: "found" },
+          two: { status: "found" },
+          three: { status: "found" },
+          four: { status: "found" }
+        }
+      })
+    }
+    return jsonResponse({}, { ok: false, status: 404 })
+  }
+
+  const dom = loadPage(fetchImpl)
+  await nextTurn()
+  assert.match(dom.window.document.querySelector("#proofSummary").textContent, /4 of 4 needs found/)
+  assert.equal(dom.window.document.querySelector("#proofSource").href, "https://example.com/official")
+  dom.window.close()
+})

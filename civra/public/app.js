@@ -21,6 +21,8 @@ const addPermitForm = document.querySelector("#addPermitForm")
 const toast = document.querySelector("#toast")
 const permitsCard = document.querySelector("#permitsCard")
 const historyCard = document.querySelector("#historyCard")
+const proofSummary = document.querySelector("#proofSummary")
+const proofSource = document.querySelector("#proofSource")
 
 const allowedFileTypes = new Set(["application/pdf", "image/jpeg", "image/png"])
 const maxFileBytes = 10 * 1024 * 1024
@@ -262,6 +264,26 @@ async function syncSession() {
   }
 }
 
+async function loadLiveProof() {
+  try {
+    const response = await fetch("/live-proof.json")
+    const proof = await response.json()
+    if (!response.ok || !proof.pageVerified) throw new Error("Proof is not verified")
+    const found = Object.values(proof.checks).filter(check => check.status === "found").length
+    const date = new Date(proof.checkedAt).toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    })
+    proofSummary.textContent = `${found} of 4 needs found on the official city page. Recorded browser run on ${date}.`
+    proofSource.href = proof.source
+  } catch {
+    proofSummary.textContent = "The saved live proof could not be loaded. Run the check again before relying on it."
+  }
+}
+
 accessForm.addEventListener("submit", async event => {
   event.preventDefault()
   const code = accessCode.value
@@ -289,3 +311,4 @@ signOut.addEventListener("click", async () => {
 })
 
 syncSession()
+loadLiveProof()
